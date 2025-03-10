@@ -22,6 +22,7 @@ def _configure (endpoint: str, exporter: "Type[GRPCExporter] | Type[HTTPExporter
     metrics.set_meter_provider(provider)
 
 def configure_http (config: "HttpConfig"):
+    print(HTTPExporter)
     _configure(config.metrics_endpoint, HTTPExporter)
 
 def get_test_reader ():

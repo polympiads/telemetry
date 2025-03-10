@@ -8,3 +8,6 @@ opentelemetry-proto
 opentelemetry-sdk
 opentelemetry-semantic-conventions
 opentelemetry-util-http
+
+coverage
+pytest
