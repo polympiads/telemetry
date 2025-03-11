@@ -12,10 +12,11 @@ sys.path.append(
     os.path.dirname(os.path.dirname(__file__)))
 
 from telemetry import configure
-from telemetry.config import HttpConfig
+from telemetry.config import HttpConfig, Resource, SERVICE_NAME
 from telemetry.metrics import get_meter
 
 config = HttpConfig( "http://localhost:4318" )
+config.resource = Resource({ SERVICE_NAME: "example_service" })
 configure(config)
 
 meter = get_meter( "example.metrics" )

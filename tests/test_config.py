@@ -4,11 +4,15 @@ import os
 from unittest.mock import patch, Mock
 
 from telemetry import configure, configure_from_env
-from telemetry.config import *
+from telemetry.config import TestConfig as _TestConfig
+from telemetry.config import BaseConfig, HttpConfig, \
+    ENV_CONFIG_TYPE, ENV_HTTP_ENDPOINT, ENV_HTTP_LOGS_SUFFIX, \
+    ENV_HTTP_METRICS_SUFFIX, ENV_HTTP_TRACES_SUFFIX, \
+    Resource, SERVICE_NAME
 
 @patch("telemetry.metrics.configure_test")
 def test_configure_test_config (configure_test: Mock):
-    config = TestConfig()
+    config = _TestConfig()
     configure( config )
 
     configure_test.assert_called_once_with(config)
@@ -41,8 +45,14 @@ def test_from_env (configure: Mock):
         {  }
     ))
     TESTS.append((
-        TestConfig(),
+        _TestConfig(),
         { ENV_CONFIG_TYPE: "TEST" }
+    ))
+    tconfig = _TestConfig()
+    tconfig.resource = Resource({ SERVICE_NAME: "some_service" })
+    TESTS.append((
+        tconfig,
+        { ENV_CONFIG_TYPE: "TEST", "TELEMETRY_RESOURCE_SERVICE_NAME": "some_service" }
     ))
     TESTS.append((
         None,

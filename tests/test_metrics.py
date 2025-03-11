@@ -1,21 +1,18 @@
 
-import sys
-
 from unittest.mock import patch, Mock
 
 from telemetry import using_test_config
-from telemetry.config import HttpConfig, TestConfig
+from telemetry.config import HttpConfig
+from telemetry.config import TestConfig as _TestConfig
 from telemetry.metrics import CollectedMetrics, MetricsTestVerbosity, configure_http, configure_test, get_test_reader, get_meter
 
 from opentelemetry.sdk.metrics import MeterProvider
-
-from tests.utils import capture_stdout_stderr
 
 @patch("opentelemetry.metrics.set_meter_provider")
 def test_configure_test (set_meter_provider: Mock):
     MeterProvider._all_metric_readers.clear()
 
-    configure_test(TestConfig())
+    configure_test(_TestConfig())
 
     set_meter_provider.assert_called_once()    
 
@@ -37,9 +34,11 @@ def test_configure_http (set_meter_provider: Mock, otlp_exporter: Mock, periodic
     periodic_reader.return_value = Mock()
     meter_provider.return_value  = Mock()
 
-    configure_http( HttpConfig("http://localhost:4318") )
+    config = HttpConfig("http://localhost:4318")
+
+    configure_http( config )
     set_meter_provider.assert_called_once_with( meter_provider.return_value )
-    meter_provider    .assert_called_once_with( metric_readers=[ periodic_reader.return_value ] )
+    meter_provider    .assert_called_once_with( resource=config.resource, metric_readers=[ periodic_reader.return_value ] )
     periodic_reader   .assert_called_once_with( otlp_exporter.return_value )
     otlp_exporter     .assert_called_once_with( "http://localhost:4318/v1/metrics" )
 

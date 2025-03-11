@@ -1,6 +1,8 @@
 
 import os
 
+from opentelemetry.sdk.resources import *
+
 ENV_CONFIG_TYPE   = "TELEMETRY_CONFIG_TYPE"
 ENV_HTTP_ENDPOINT = "TELEMETRY_HTTP_ENDPOINT"
 
@@ -11,16 +13,37 @@ ENV_HTTP_LOGS_SUFFIX    = "TELEMETRY_LOGS_SUFFIX"
 class TelemetryConfigException (Exception): pass
 
 class BaseConfig:
+    resource: Resource
+
+    def __init__ (self):
+        self.resource = Resource({})
     @staticmethod
     def from_env () -> "BaseConfig":
         target_type = os.environ.get( ENV_CONFIG_TYPE )
 
-        if target_type == "TEST": return TestConfig.from_env()
-        if target_type == "HTTP": return HttpConfig.from_env()
+        resource_params = {}
 
-        raise TelemetryConfigException(
-            f"Environment variable '{ENV_CONFIG_TYPE}' \
-                (with value {target_type}) should be either 'TEST' or 'HTTP'")
+        for key in dir(ResourceAttributes):
+            if "__" in key: continue
+
+            val = os.getenv(f"TELEMETRY_RESOURCE_{key}")
+            if val is None: continue
+
+            resource_params[getattr(ResourceAttributes, key)] = val
+        print(resource_params)
+
+        config = None
+        if target_type == "TEST": config = TestConfig.from_env()
+        if target_type == "HTTP": config = HttpConfig.from_env()
+
+        if config is None:
+            raise TelemetryConfigException(
+                f"Environment variable '{ENV_CONFIG_TYPE}' \
+                    (with value {target_type}) should be either 'TEST' or 'HTTP'")
+
+        config.resource = Resource(resource_params)
+
+        return config
 
 class TestConfig(BaseConfig):
     @staticmethod
@@ -49,8 +72,13 @@ class HttpConfig(BaseConfig):
         return config
 
     def __init__(self, endpoint: str):
+        super().__init__()
+
         self.endpoint = endpoint
 
     @property
     def metrics_endpoint (self):
         return self.endpoint + self.suffix_metrics
+    @property
+    def traces_endpoint (self):
+        return self.endpoint + self.suffix_traces

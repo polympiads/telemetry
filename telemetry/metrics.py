@@ -18,22 +18,21 @@ from telemetry.config import TestConfig, HttpConfig
 
 _TEST_READER = InMemoryMetricReader()
 
-def _configure (endpoint: str, exporter: "Type[GRPCExporter] | Type[HTTPExporter]"):
+def _configure (resource, endpoint: str, exporter: "Type[GRPCExporter] | Type[HTTPExporter]"):
     exporter = exporter( endpoint )
     reader   = PeriodicExportingMetricReader( exporter )
 
-    provider = MeterProvider(metric_readers=[reader])
+    provider = MeterProvider(resource=resource, metric_readers=[reader])
 
     metrics.set_meter_provider(provider)
 
 def configure_http (config: "HttpConfig"):
-    print(HTTPExporter)
-    _configure(config.metrics_endpoint, HTTPExporter)
+    _configure(config.resource, config.metrics_endpoint, HTTPExporter)
 
 def get_test_reader ():
     return _TEST_READER
 def configure_test (config: "TestConfig"):
-    provider = MeterProvider(metric_readers=[_TEST_READER])
+    provider = MeterProvider(resource=config.resource, metric_readers=[_TEST_READER])
 
     metrics.set_meter_provider(provider)
 
