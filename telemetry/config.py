@@ -1,10 +1,12 @@
 
 import os
+import logging
 
 from opentelemetry.sdk.resources import *
 
-ENV_CONFIG_TYPE   = "TELEMETRY_CONFIG_TYPE"
-ENV_HTTP_ENDPOINT = "TELEMETRY_HTTP_ENDPOINT"
+ENV_CONFIG_TYPE     = "TELEMETRY_CONFIG_TYPE"
+ENV_CONFIG_LOGLEVEL = "TELEMETRY_LOG_LEVEL"
+ENV_HTTP_ENDPOINT   = "TELEMETRY_HTTP_ENDPOINT"
 
 ENV_HTTP_METRICS_SUFFIX = "TELEMETRY_METRICS_SUFFIX"
 ENV_HTTP_TRACES_SUFFIX  = "TELEMETRY_TRACES_SUFFIX"
@@ -12,8 +14,27 @@ ENV_HTTP_LOGS_SUFFIX    = "TELEMETRY_LOGS_SUFFIX"
 
 class TelemetryConfigException (Exception): pass
 
+def get_loglevel_from_name (name: str):
+    print(name)
+    if name == "CRITICAL":
+        return logging.CRITICAL
+    if name == "ERROR":
+        return logging.ERROR
+    if name == "WARNING":
+        return logging.WARNING
+    if name == "INFO":
+        return logging.INFO
+    if name == "DEBUG":
+        return logging.DEBUG
+
+    raise TelemetryConfigException(
+        f"Could not find log level for name '{name}' "
+        + "(expecting 'CRITICAL', 'ERROR', 'WARNING', 'INFO' or 'DEBUG')"
+    )
+
 class BaseConfig:
     resource: Resource
+    loglevel = logging.NOTSET
 
     def __init__ (self):
         self.resource = Resource({})
@@ -30,7 +51,6 @@ class BaseConfig:
             if val is None: continue
 
             resource_params[getattr(ResourceAttributes, key)] = val
-        print(resource_params)
 
         config = None
         if target_type == "TEST": config = TestConfig.from_env()
@@ -42,6 +62,10 @@ class BaseConfig:
                     (with value {target_type}) should be either 'TEST' or 'HTTP'")
 
         config.resource = Resource(resource_params)
+        
+        loglevel_target = os.environ.get(ENV_CONFIG_LOGLEVEL, None)
+        if loglevel_target is not None:
+            config.loglevel = get_loglevel_from_name( loglevel_target )
 
         return config
 
@@ -82,3 +106,6 @@ class HttpConfig(BaseConfig):
     @property
     def traces_endpoint (self):
         return self.endpoint + self.suffix_traces
+    @property
+    def logs_endpoint (self):
+        return self.endpoint + self.suffix_logs

@@ -5,6 +5,7 @@ import enum
 
 import telemetry.metrics as metrics
 import telemetry.traces  as traces
+import telemetry.logging as _logging
 
 from contextlib import contextmanager
 from telemetry.config import *
@@ -18,10 +19,14 @@ def configure (config: BaseConfig):
     if isinstance(config, TestConfig):
         metrics.configure_test( config )
         traces .configure_test( config )
+        
+        _logging.configure_test( config )
     
     if isinstance(config, HttpConfig):
         metrics.configure_http( config )
         traces .configure_http( config )
+
+        _logging.configure_http( config )
 
 _TEST_CONFIGURED = False
 

@@ -8,22 +8,15 @@ from telemetry.metrics import CollectedMetrics, MetricsTestVerbosity, configure_
 
 from opentelemetry.sdk.metrics import MeterProvider
 
+@patch("telemetry.metrics.MeterProvider")
 @patch("opentelemetry.metrics.set_meter_provider")
-def test_configure_test (set_meter_provider: Mock):
-    MeterProvider._all_metric_readers.clear()
+def test_configure_test (set_meter_provider: Mock, meter_provider: Mock):
+    meter_provider.return_value = Mock()
+    config = _TestConfig()
+    configure_test(config)
 
-    configure_test(_TestConfig())
-
-    set_meter_provider.assert_called_once()    
-
-    provider_call = set_meter_provider.call_args_list[0]
-    assert len(provider_call.args) == 1
-    provider: MeterProvider = provider_call.args[0]
-    readers = list(provider._all_metric_readers)
-    assert len(readers) == 1
-    assert readers[0] is get_test_reader()
-    
-    MeterProvider._all_metric_readers.clear()
+    meter_provider.assert_called_once_with(resource=config.resource, metric_readers=[get_test_reader()])
+    set_meter_provider.assert_called_once_with(meter_provider.return_value)
 
 @patch("telemetry.metrics.MeterProvider")
 @patch("telemetry.metrics.PeriodicExportingMetricReader")

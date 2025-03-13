@@ -1,4 +1,5 @@
 
+import logging
 import os
 
 from unittest.mock import patch, Mock
@@ -8,21 +9,29 @@ from telemetry.config import TestConfig as _TestConfig
 from telemetry.config import BaseConfig, HttpConfig, \
     ENV_CONFIG_TYPE, ENV_HTTP_ENDPOINT, ENV_HTTP_LOGS_SUFFIX, \
     ENV_HTTP_METRICS_SUFFIX, ENV_HTTP_TRACES_SUFFIX, \
-    Resource, SERVICE_NAME
+    Resource, SERVICE_NAME, ENV_CONFIG_LOGLEVEL
 
 @patch("telemetry.metrics.configure_test")
-def test_configure_test_config (configure_test: Mock):
+@patch("telemetry.traces.configure_test")
+@patch("telemetry.logging.configure_test")
+def test_configure_test_config (logging_test: Mock, traces_test: Mock, metrics_test: Mock):
     config = _TestConfig()
     configure( config )
 
-    configure_test.assert_called_once_with(config)
+    logging_test.assert_called_once_with(config)
+    traces_test.assert_called_once_with(config)
+    metrics_test.assert_called_once_with(config)
 
 @patch("telemetry.metrics.configure_http")
-def test_configure_http_config (configure_http: Mock):
+@patch("telemetry.traces.configure_http")
+@patch("telemetry.logging.configure_http")
+def test_configure_http_config (logging_http: Mock, traces_http: Mock, metrics_http: Mock):
     config = HttpConfig("http://localhost:4318")
     configure( config )
 
-    configure_http.assert_called_once_with( config )
+    logging_http.assert_called_once_with(config)
+    traces_http.assert_called_once_with(config)
+    metrics_http.assert_called_once_with(config)
 
 def create_obj (cls, args = [], kwargs = {}, fields = {}):
     obj = cls(*args, **kwargs)
@@ -48,6 +57,11 @@ def test_from_env (configure: Mock):
         _TestConfig(),
         { ENV_CONFIG_TYPE: "TEST" }
     ))
+    for key in [ "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG" ]:
+        tconfig = _TestConfig()
+        tconfig.loglevel = getattr(logging, key)
+        TESTS.append((tconfig, { ENV_CONFIG_TYPE: "TEST", ENV_CONFIG_LOGLEVEL: key }))
+    TESTS.append((None, { ENV_CONFIG_TYPE: "TEST", ENV_CONFIG_LOGLEVEL: "<unknown>" }))
     tconfig = _TestConfig()
     tconfig.resource = Resource({ SERVICE_NAME: "some_service" })
     TESTS.append((
