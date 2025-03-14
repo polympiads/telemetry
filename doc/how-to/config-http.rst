@@ -31,6 +31,18 @@ Here, we have assumed that you are using the ``grafana/otel-lgtm`` docker image,
 Configuration parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+It may be usefull for you to change the formatter for logging, if you need to quickly see some parameters in the logs.
+To do that, you can set the ``formatter`` field of the config to any thing you want.
+
+.. code-block:: python
+
+    from telemetry import configure, HttpConfig
+    import logging
+
+    config = HttpConfig("http://localhost:4318")
+    config.formatter = logging.Formatter("%(name)s: %(message)s")
+    configure(config)
+
 You may need to modify the opentelemetry ``Resource`` object to signal what service or cluster your code is running in,
 to do that, you may set the ``resource`` field to a new object of your choice.
 

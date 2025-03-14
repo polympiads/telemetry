@@ -54,6 +54,9 @@ def configure (config: BaseConfig, handler_class: "Type[LoggingHandler]" = Loggi
     logging.getLogger().setLevel( config.loglevel )
     logging.getLogger().addHandler(handler)
 
+    if config.formatter is not None:
+        handler.setFormatter(config.formatter)
+
     if isinstance(config, TestConfig):
         set_test_handler(handler)
 

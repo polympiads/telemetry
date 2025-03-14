@@ -2,8 +2,8 @@
 from typing import Any, Dict, List, Tuple
 from opentelemetry import trace
 from opentelemetry.trace import get_tracer
+from opentelemetry.propagate import inject
 from opentelemetry.sdk.trace import TracerProvider
-
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter as HTTPExporter
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter as GRPCExporter
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter

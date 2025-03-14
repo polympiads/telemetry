@@ -22,7 +22,7 @@ config.resource = Resource({ SERVICE_NAME: "example_service" })
 # config.loglevel = logging.DEBUG
 configure( config )
 
-logging.critical( "Some critical message" )
+logging.critical( "Some critical message", extra = { "arg": 42 } )
 logging.error( "Some error message" )
 logging.warning( "Some warning message" )
 logging.info("Some info message")

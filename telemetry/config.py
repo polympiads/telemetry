@@ -34,7 +34,10 @@ def get_loglevel_from_name (name: str):
 
 class BaseConfig:
     resource: Resource
-    loglevel = logging.NOTSET
+
+    # Log Parameters
+    loglevel  = logging.NOTSET
+    formatter: "logging.Formatter | None" = None
 
     def __init__ (self):
         self.resource = Resource({})
