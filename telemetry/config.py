@@ -4,9 +4,10 @@ import logging
 
 from opentelemetry.sdk.resources import *
 
-ENV_CONFIG_TYPE     = "TELEMETRY_CONFIG_TYPE"
-ENV_CONFIG_LOGLEVEL = "TELEMETRY_LOG_LEVEL"
-ENV_HTTP_ENDPOINT   = "TELEMETRY_HTTP_ENDPOINT"
+ENV_CONFIG_TYPE      = "TELEMETRY_CONFIG_TYPE"
+ENV_CONFIG_LOGLEVEL  = "TELEMETRY_LOG_LEVEL"
+ENV_HTTP_ENDPOINT    = "TELEMETRY_HTTP_ENDPOINT"
+ENV_HTTP_FORCE_SLASH = "TELEMETRY_HTTP_FORCE_SLASH"
 
 ENV_HTTP_METRICS_SUFFIX = "TELEMETRY_METRICS_SUFFIX"
 ENV_HTTP_TRACES_SUFFIX  = "TELEMETRY_TRACES_SUFFIX"
@@ -15,7 +16,6 @@ ENV_HTTP_LOGS_SUFFIX    = "TELEMETRY_LOGS_SUFFIX"
 class TelemetryConfigException (Exception): pass
 
 def get_loglevel_from_name (name: str):
-    print(name)
     if name == "CRITICAL":
         return logging.CRITICAL
     if name == "ERROR":
@@ -87,7 +87,14 @@ class HttpConfig(BaseConfig):
         if endpoint is None:
             raise TelemetryConfigException(f"Environment variable '{ENV_HTTP_ENDPOINT}' should be set in 'HTTP' mode.")
         
-        config = HttpConfig(endpoint)
+        force_slash = False
+        force_slash_env = os.getenv( ENV_HTTP_FORCE_SLASH )
+        if force_slash_env is not None:
+            force_slash = force_slash_env == 'TRUE'
+            if not force_slash and force_slash_env != 'FALSE':
+                raise TelemetryConfigException(f"Environment variable '{ENV_HTTP_FORCE_SLASH}' should be set to 'TRUE', 'FALSE' or shouldn't be set at all.")
+        
+        config = HttpConfig(endpoint, force_slash)
 
         config.suffix_metrics = os.getenv( ENV_HTTP_METRICS_SUFFIX, config.suffix_metrics )
         config.suffix_traces  = os.getenv( ENV_HTTP_TRACES_SUFFIX,  config.suffix_traces  )
@@ -95,8 +102,12 @@ class HttpConfig(BaseConfig):
 
         return config
 
-    def __init__(self, endpoint: str):
+    def __init__(self, endpoint: str, force_ending_slash: bool = False):
         super().__init__()
+
+        if endpoint.endswith("/") and not force_ending_slash:
+            print("WARNING, the ending '/' will be removed by default.")
+            endpoint = endpoint[:-1]
 
         self.endpoint = endpoint
 

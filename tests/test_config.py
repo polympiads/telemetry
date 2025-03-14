@@ -9,7 +9,7 @@ from telemetry.config import TestConfig as _TestConfig
 from telemetry.config import BaseConfig, HttpConfig, \
     ENV_CONFIG_TYPE, ENV_HTTP_ENDPOINT, ENV_HTTP_LOGS_SUFFIX, \
     ENV_HTTP_METRICS_SUFFIX, ENV_HTTP_TRACES_SUFFIX, \
-    Resource, SERVICE_NAME, ENV_CONFIG_LOGLEVEL
+    Resource, SERVICE_NAME, ENV_CONFIG_LOGLEVEL, ENV_HTTP_FORCE_SLASH
 
 @patch("telemetry.metrics.configure_test")
 @patch("telemetry.traces.configure_test")
@@ -46,7 +46,7 @@ def check_obj (a, b):
         assert getattr(a, x) == getattr(b, x)
 
 @patch("telemetry.configure")
-def test_from_env (configure: Mock):
+def test_from_env (configure: Mock, capsys):
     TESTS = []
 
     TESTS.append((
@@ -73,6 +73,24 @@ def test_from_env (configure: Mock):
         { ENV_CONFIG_TYPE: "HTTP" }
     ))
     TESTS.append((
+        HttpConfig( "http://localhost:4318/", True ),
+        { ENV_CONFIG_TYPE: "HTTP", ENV_HTTP_ENDPOINT: "http://localhost:4318/", ENV_HTTP_FORCE_SLASH: "TRUE" }
+    ))
+    TESTS.append((
+        HttpConfig( "http://localhost:4318" ),
+        { ENV_CONFIG_TYPE: "HTTP", ENV_HTTP_ENDPOINT: "http://localhost:4318/", ENV_HTTP_FORCE_SLASH: "FALSE" },
+        "WARNING, the ending '/' will be removed by default.\n"
+    ))
+    TESTS.append((
+        HttpConfig( "http://localhost:4318" ),
+        { ENV_CONFIG_TYPE: "HTTP", ENV_HTTP_ENDPOINT: "http://localhost:4318/" },
+        "WARNING, the ending '/' will be removed by default.\n"
+    ))
+    TESTS.append((
+        None,
+        { ENV_CONFIG_TYPE: "HTTP", ENV_HTTP_ENDPOINT: "http://localhost:4318/", ENV_HTTP_FORCE_SLASH: "WRONG" }
+    ))
+    TESTS.append((
         HttpConfig( "http://localhost:4318" ),
         { ENV_CONFIG_TYPE: "HTTP", ENV_HTTP_ENDPOINT: "http://localhost:4318" }
     ))
@@ -88,8 +106,8 @@ def test_from_env (configure: Mock):
         create_obj( HttpConfig, [ "http://localhost:4318" ], {}, { "suffix_logs": "/v2/traces" } ),
         { ENV_CONFIG_TYPE: "HTTP", ENV_HTTP_ENDPOINT: "http://localhost:4318", ENV_HTTP_LOGS_SUFFIX: "/v2/traces" }
     ))
-
-    for expects, envs in TESTS:
+    result = None
+    for expects, envs, *args in TESTS:
         try:
             for key in envs.keys():
                 os.environ.update([ (key, envs[key]) ])
@@ -98,10 +116,14 @@ def test_from_env (configure: Mock):
 
             check_obj(expects, result)
         except Exception as e:
-            assert expects is None
+            assert expects is None, f"{envs} {e} {expects}"
         finally:
             for key in envs.keys():
                 os.environ.pop(key)
+        if len(args) == 1:
+            assert capsys.readouterr().out == args[0]
+        else:
+            assert capsys.readouterr().out == ""
         
         try:
             for key in envs.keys():
@@ -119,3 +141,7 @@ def test_from_env (configure: Mock):
         finally:
             for key in envs.keys():
                 os.environ.pop(key)
+        if len(args) == 1:
+            assert capsys.readouterr().out == args[0]
+        else:
+            assert capsys.readouterr().out == ""
