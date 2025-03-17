@@ -14,7 +14,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 project = 'telemetry'
-copyright = '2024, polympiads'
+copyright = '2025, polympiads'
 author = 'polympiads'
 release = '1.0'
 
