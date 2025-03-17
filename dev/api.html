@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API Reference &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=cb25574f" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="How to write unittests for traces" href="how-to/test-traces.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="api-reference">
+<span id="api-ref"></span><h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<p>This page contains the full reference to the API of the telemetry framework.</p>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h2>
+<section id="telemetry">
+<h3><code class="docutils literal notranslate"><span class="pre">telemetry</span></code><a class="headerlink" href="#telemetry" title="Link to this heading">¶</a></h3>
+<section id="telemetry-configure">
+<h4><code class="docutils literal notranslate"><span class="pre">telemetry.configure</span></code><a class="headerlink" href="#telemetry-configure" title="Link to this heading">¶</a></h4>
+<p>This method takes a <code class="docutils literal notranslate"><span class="pre">BaseConfig</span></code> object and configures all exporters
+from that configuration.</p>
+</section>
+<section id="telemetry-configure-from-env">
+<h4><code class="docutils literal notranslate"><span class="pre">telemetry.configure_from_env</span></code><a class="headerlink" href="#telemetry-configure-from-env" title="Link to this heading">¶</a></h4>
+<p>This method takes no arguments and will generate the configuration using
+<code class="docutils literal notranslate"><span class="pre">BaseConfig.from_env()</span></code> and then calling the <code class="docutils literal notranslate"><span class="pre">configure</span></code> method from it.</p>
+</section>
+</section>
+<section id="telemetry-config-baseconfig">
+<h3><code class="docutils literal notranslate"><span class="pre">telemetry.config.BaseConfig</span></code><a class="headerlink" href="#telemetry-config-baseconfig" title="Link to this heading">¶</a></h3>
+<p>This class represents the base class for all the configuration of the telemetry.</p>
+<section id="baseconfig-init">
+<h4><code class="docutils literal notranslate"><span class="pre">BaseConfig.__init__()</span></code><a class="headerlink" href="#baseconfig-init" title="Link to this heading">¶</a></h4>
+<p>Create a default <code class="docutils literal notranslate"><span class="pre">BaseConfig</span></code> object</p>
+</section>
+<section id="baseconfig-from-env">
+<h4><code class="docutils literal notranslate"><span class="pre">BaseConfig.from_env()</span></code><a class="headerlink" href="#baseconfig-from-env" title="Link to this heading">¶</a></h4>
+<p>Create a configuration from the environment variables.
+The configuration parameters can be found in
+<a class="reference internal" href="how-to/config-env.html#config-env"><span class="std std-ref">How to configure telemetry from the environment</span></a></p>
+</section>
+<section id="baseconfig-resource">
+<h4><code class="docutils literal notranslate"><span class="pre">BaseConfig.resource</span></code><a class="headerlink" href="#baseconfig-resource" title="Link to this heading">¶</a></h4>
+<p>This field represents the <code class="docutils literal notranslate"><span class="pre">Resource</span></code> object used by OpenTelemetry
+to differentiate between multiple services.</p>
+</section>
+<section id="baseconfig-loglevel">
+<h4><code class="docutils literal notranslate"><span class="pre">BaseConfig.loglevel</span></code><a class="headerlink" href="#baseconfig-loglevel" title="Link to this heading">¶</a></h4>
+<p>This field represents the default loglevel used to configure all the loggers.</p>
+</section>
+<section id="baseconfig-formatter">
+<h4><code class="docutils literal notranslate"><span class="pre">BaseConfig.formatter</span></code><a class="headerlink" href="#baseconfig-formatter" title="Link to this heading">¶</a></h4>
+<p>This field represents the formatter used by the handler to format messages.</p>
+</section>
+</section>
+<section id="telemetry-config-testconfig">
+<h3><code class="docutils literal notranslate"><span class="pre">telemetry.config.TestConfig</span></code><a class="headerlink" href="#telemetry-config-testconfig" title="Link to this heading">¶</a></h3>
+<p>Configuration used for testing</p>
+<section id="testconfig-from-env">
+<h4><code class="docutils literal notranslate"><span class="pre">TestConfig.from_env()</span></code><a class="headerlink" href="#testconfig-from-env" title="Link to this heading">¶</a></h4>
+<p>Returns a test config with specific configuration for testing from environment.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is for internal purposes, it does not include the generic configuration
+and so it will not take into account the resource, loglevel or formatter.</p>
+</div>
+</section>
+</section>
+<section id="telemetry-config-httpconfig">
+<h3><code class="docutils literal notranslate"><span class="pre">telemetry.config.HttpConfig</span></code><a class="headerlink" href="#telemetry-config-httpconfig" title="Link to this heading">¶</a></h3>
+<p>This configuration is used for http exporters.</p>
+<section id="httpconfig-init">
+<h4><code class="docutils literal notranslate"><span class="pre">HttpConfig.__init__()</span></code><a class="headerlink" href="#httpconfig-init" title="Link to this heading">¶</a></h4>
+<p>Constructs an <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code>, it takes between 0 and 2 arguments.
+The first argument is the base endpoint, it should be set unless
+you manually set all the three endpoints (otherwise it will raise
+an error during the configuration).
+The second argument is used to enforce the slash if your endpoint contains
+a slash (otherwise it will be automatically removed with a warning).</p>
+</section>
+<section id="httpconfig-endpoint">
+<h4><code class="docutils literal notranslate"><span class="pre">HttpConfig.endpoint</span></code><a class="headerlink" href="#httpconfig-endpoint" title="Link to this heading">¶</a></h4>
+<p>Server of all HTTP endpoints.</p>
+</section>
+<section id="httpconfig-endpoints-suffixes">
+<h4><code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code> endpoints / suffixes<a class="headerlink" href="#httpconfig-endpoints-suffixes" title="Link to this heading">¶</a></h4>
+<p>An <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code> has 3 variables that can be set, and are used to compute the final
+endpoints. These variables are <code class="docutils literal notranslate"><span class="pre">suffix_metrics</span></code>, <code class="docutils literal notranslate"><span class="pre">suffix_traces</span></code>, <code class="docutils literal notranslate"><span class="pre">suffix_logs</span></code>.
+They are appended to the base endpoint to get the final endpoints, that one can get
+using the <code class="docutils literal notranslate"><span class="pre">metrics_endpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">traces_endpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">logs_endpoint</span></code>.</p>
+<p>Alternatively, if you don’t want the append behaviour, you can just set the properties using
+the setter (see Python <code class="docutils literal notranslate"><span class="pre">&#64;property</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;variable.setter</span></code> documentation for more on how properties
+work).</p>
+</section>
+<section id="httpconfig-from-env">
+<h4><code class="docutils literal notranslate"><span class="pre">HttpConfig.from_env()</span></code><a class="headerlink" href="#httpconfig-from-env" title="Link to this heading">¶</a></h4>
+<p>Returns an http config with specific configuration for http exporters from environment.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is for internal purposes, it does not include the generic configuration
+and so it will not take into account the resource, loglevel or formatter.</p>
+</div>
+</section>
+</section>
+</section>
+<section id="unit-testing">
+<h2>Unit Testing<a class="headerlink" href="#unit-testing" title="Link to this heading">¶</a></h2>
+<section id="metrics-unit-testing-telemetry-metrics">
+<h3>Metrics Unit Testing (<code class="docutils literal notranslate"><span class="pre">telemetry.metrics</span></code>)<a class="headerlink" href="#metrics-unit-testing-telemetry-metrics" title="Link to this heading">¶</a></h3>
+<section id="get-test-reader">
+<h4><code class="docutils literal notranslate"><span class="pre">get_test_reader</span></code><a class="headerlink" href="#get-test-reader" title="Link to this heading">¶</a></h4>
+<p>Returns the object that contains all the generated metrics,
+it is an instance of an <code class="docutils literal notranslate"><span class="pre">InMemoryMetricReader</span></code>.</p>
+</section>
+<section id="metricresult">
+<h4><code class="docutils literal notranslate"><span class="pre">MetricResult</span></code><a class="headerlink" href="#metricresult" title="Link to this heading">¶</a></h4>
+<p>A metric result represents a metric (with a name, attributes and a value).</p>
+</section>
+<section id="collectedmetrics">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code><a class="headerlink" href="#collectedmetrics" title="Link to this heading">¶</a></h4>
+<p>A collected metrics is a list of metrics that can either be generated by the code
+or from an expected list of metrics.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The inner metrics list must be sorted for the functions to properly work.</p>
+</div>
+</section>
+<section id="collectedmetrics-get-metric">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.get_metric</span></code><a class="headerlink" href="#collectedmetrics-get-metric" title="Link to this heading">¶</a></h4>
+<p>Returns the metric associated with the specified name and attributes.</p>
+</section>
+<section id="collectedmetrics-includes">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.includes</span></code><a class="headerlink" href="#collectedmetrics-includes" title="Link to this heading">¶</a></h4>
+<p>Checks that the given metrics are all present in the metrics of the <code class="docutils literal notranslate"><span class="pre">self</span></code> object.
+It also checks that the value matches by a maximum difference of <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> that you
+can set in the arguments.</p>
+<p>It returns whether they match followed by an error message (or <code class="docutils literal notranslate"><span class="pre">None</span></code> if there is no difference).</p>
+</section>
+<section id="collectedmetrics-as-scheme">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.as_scheme</span></code><a class="headerlink" href="#collectedmetrics-as-scheme" title="Link to this heading">¶</a></h4>
+<p>This returns the metrics in a human readable format.
+This format can also be used to generate back the list of metrics.</p>
+</section>
+<section id="collectedmetrics-from-scheme">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.from_scheme</span></code><a class="headerlink" href="#collectedmetrics-from-scheme" title="Link to this heading">¶</a></h4>
+<p>This generate a <code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code> object from a scheme.</p>
+</section>
+<section id="collectedmetrics-from-metrics-data">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.from_metrics_data</span></code><a class="headerlink" href="#collectedmetrics-from-metrics-data" title="Link to this heading">¶</a></h4>
+<p>This generate a <code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code> object from metrics data (these come from a metrics reader).</p>
+</section>
+<section id="collectedmetrics-from-reader">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.from_reader</span></code><a class="headerlink" href="#collectedmetrics-from-reader" title="Link to this heading">¶</a></h4>
+<p>This generate a <code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code> object from the metrics reader.</p>
+</section>
+<section id="collectedmetrics-verify-scheme">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.verify_scheme</span></code><a class="headerlink" href="#collectedmetrics-verify-scheme" title="Link to this heading">¶</a></h4>
+<p>This verifies that the data in the metrics reader include the scheme data, with the specified tolerance.
+You can parametrize the error messages printed using the log level, that is either full or only error message.
+The full mode displays both the error message and both expected and found metrics as schemes.
+The simple error mode displays only the error message.</p>
+</section>
+</section>
+<section id="id1">
+<h3>Metrics Unit Testing (<code class="docutils literal notranslate"><span class="pre">telemetry.metrics</span></code>)<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<section id="id2">
+<h4><code class="docutils literal notranslate"><span class="pre">get_test_reader</span></code><a class="headerlink" href="#id2" title="Link to this heading">¶</a></h4>
+<p>Returns the object that contains all the generated metrics,
+it is an instance of an <code class="docutils literal notranslate"><span class="pre">InMemoryMetricReader</span></code>.</p>
+</section>
+<section id="id3">
+<h4><code class="docutils literal notranslate"><span class="pre">MetricResult</span></code><a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
+<p>A metric result represents a metric (with a name, attributes and a value).</p>
+</section>
+<section id="id4">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code><a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<p>A collected metrics is a list of metrics that can either be generated by the code
+or from an expected list of metrics.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The inner metrics list must be sorted for the functions to properly work.</p>
+</div>
+</section>
+<section id="id5">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.get_metric</span></code><a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
+<p>Returns the metric associated with the specified name and attributes.</p>
+</section>
+<section id="id6">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.includes</span></code><a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
+<p>Checks that the given metrics are all present in the metrics of the <code class="docutils literal notranslate"><span class="pre">self</span></code> object.
+It also checks that the value matches by a maximum difference of <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> that you
+can set in the arguments.</p>
+<p>It returns whether they match followed by an error message (or <code class="docutils literal notranslate"><span class="pre">None</span></code> if there is no difference).</p>
+</section>
+<section id="id7">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.as_scheme</span></code><a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
+<p>This returns the metrics in a human readable format.
+This format can also be used to generate back the list of metrics.</p>
+</section>
+<section id="id8">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.from_scheme</span></code><a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+<p>This generate a <code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code> object from a scheme.</p>
+</section>
+<section id="id9">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.from_metrics_data</span></code><a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
+<p>This generate a <code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code> object from metrics data (these come from a metrics reader).</p>
+</section>
+<section id="id10">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.from_reader</span></code><a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
+<p>This generate a <code class="docutils literal notranslate"><span class="pre">CollectedMetrics</span></code> object from the metrics reader.</p>
+</section>
+<section id="id11">
+<h4><code class="docutils literal notranslate"><span class="pre">CollectedMetrics.verify_scheme</span></code><a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
+<p>This verifies that the data in the metrics reader include the scheme data, with the specified tolerance.
+You can parametrize the error messages printed using the log level, that is either full or only error message.
+The full mode displays both the error message and both expected and found metrics as schemes.
+The simple error mode displays only the error message.</p>
+</section>
+</section>
+<section id="logging-unit-testing-telemetry-logging">
+<h3>Logging Unit Testing (<code class="docutils literal notranslate"><span class="pre">telemetry.logging</span></code>)<a class="headerlink" href="#logging-unit-testing-telemetry-logging" title="Link to this heading">¶</a></h3>
+<section id="get-test-handler">
+<h4><code class="docutils literal notranslate"><span class="pre">get_test_handler</span></code><a class="headerlink" href="#get-test-handler" title="Link to this heading">¶</a></h4>
+<p>Returns the object that contains all the generated log records,
+it is an instance of a <code class="docutils literal notranslate"><span class="pre">TestLoggingHandler</span></code>, and contains <code class="docutils literal notranslate"><span class="pre">clear</span></code>
+and <code class="docutils literal notranslate"><span class="pre">get_sent_records</span></code> methods to get the log records.</p>
+</section>
+<section id="virtuallog">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLog</span></code><a class="headerlink" href="#virtuallog" title="Link to this heading">¶</a></h4>
+<p>Objects of this class represents the fundamental data of logs. It contains the message, loglevel
+and log extra parameters.</p>
+</section>
+<section id="virtuallogrecords">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords</span></code><a class="headerlink" href="#virtuallogrecords" title="Link to this heading">¶</a></h4>
+<p>It represents the list of virtual logs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The inner logs list is sorted by time of logs.</p>
+</div>
+</section>
+<section id="virtuallogrecords-includes-args-and-matches-with">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.includes_args_and_matches_with</span></code><a class="headerlink" href="#virtuallogrecords-includes-args-and-matches-with" title="Link to this heading">¶</a></h4>
+<p>Checks that the logs of the current object are equal by inclusion to the logs of the input object.
+Two logs are said to be equal by inclusion if they have the same loglevel, the same message and if
+the arguments of the log in <code class="docutils literal notranslate"><span class="pre">self</span></code> includes all the arguments of the log in <code class="docutils literal notranslate"><span class="pre">other</span></code>.
+By include, we mean that the argument exists and has the same value (by string comparison).</p>
+<p>It returns whether this works, and an error message (or none if no error did happen.</p>
+</section>
+<section id="virtuallogrecords-as-scheme">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.as_scheme</span></code><a class="headerlink" href="#virtuallogrecords-as-scheme" title="Link to this heading">¶</a></h4>
+<p>This returns the logs in a human readable format.
+This format can also be used to generate back the list of logs.</p>
+</section>
+<section id="virtuallogrecords-from-scheme">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.from_scheme</span></code><a class="headerlink" href="#virtuallogrecords-from-scheme" title="Link to this heading">¶</a></h4>
+<p>This generates a <code class="docutils literal notranslate"><span class="pre">VirtualLogRecords</span></code> object from a scheme.</p>
+</section>
+<section id="virtuallogrecords-from-records">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.from_records</span></code><a class="headerlink" href="#virtuallogrecords-from-records" title="Link to this heading">¶</a></h4>
+<p>This generates a <code class="docutils literal notranslate"><span class="pre">VirtualLogRecords</span></code> object from a list of records.</p>
+</section>
+<section id="virtuallogrecords-from-handler">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.from_handler</span></code><a class="headerlink" href="#virtuallogrecords-from-handler" title="Link to this heading">¶</a></h4>
+<p>This generates a <code class="docutils literal notranslate"><span class="pre">VirtualLogRecords</span></code> object from the log handler.</p>
+</section>
+<section id="virtuallogrecords-verify-scheme">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.verify_scheme</span></code><a class="headerlink" href="#virtuallogrecords-verify-scheme" title="Link to this heading">¶</a></h4>
+<p>This verifies that the data in the handler include the scheme data.
+You can parametrize the error messages printed using the log level, that is either full or only error message.
+The full mode displays both the error message and both expected and found metrics as schemes.
+The simple error mode displays only the error message.</p>
+</section>
+</section>
+<section id="traces-unit-testing-telemetry-traces">
+<h3>Traces Unit Testing (<code class="docutils literal notranslate"><span class="pre">telemetry.traces</span></code>)<a class="headerlink" href="#traces-unit-testing-telemetry-traces" title="Link to this heading">¶</a></h3>
+<section id="get-test-exporter">
+<h4><code class="docutils literal notranslate"><span class="pre">get_test_exporter</span></code><a class="headerlink" href="#get-test-exporter" title="Link to this heading">¶</a></h4>
+<p>Returns the <code class="docutils literal notranslate"><span class="pre">InMemorySpanExporter</span></code> used in testing configurations.</p>
+</section>
+<section id="group-intervals">
+<h4><code class="docutils literal notranslate"><span class="pre">group_intervals</span></code><a class="headerlink" href="#group-intervals" title="Link to this heading">¶</a></h4>
+<p>This method takes a list of objects that have both a <code class="docutils literal notranslate"><span class="pre">start_time</span></code> and <code class="docutils literal notranslate"><span class="pre">end_time</span></code> property
+and groups them by equivalence of time (that is if two objects have the same start and ending time,
+they are in the same list). Furthermore, it returns them sorted by starting time and then by ending time.</p>
+<p>This method is useful to check if two spans match as some sub elements might be time-equivalent and you
+need to greedily match time-equivalent objects.</p>
+</section>
+<section id="virtualevent-virtualspan">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualEvent</span> <span class="pre">/</span> <span class="pre">VirtualSpan</span></code><a class="headerlink" href="#virtualevent-virtualspan" title="Link to this heading">¶</a></h4>
+<p>These objects represent events and spans from traces, as a tree-like structure.
+They provide <code class="docutils literal notranslate"><span class="pre">match_with</span></code> functions to verify that they match.</p>
+</section>
+<section id="virtualcontext">
+<h4><code class="docutils literal notranslate"><span class="pre">VirtualContext</span></code><a class="headerlink" href="#virtualcontext" title="Link to this heading">¶</a></h4>
+<p>This function represents a list of span. It has a <code class="docutils literal notranslate"><span class="pre">as_span</span></code> method that returns a <code class="docutils literal notranslate"><span class="pre">VirtualSpan</span></code>
+asif the spans where subspans of a root span. It has a <code class="docutils literal notranslate"><span class="pre">match_with</span></code> function to verify it matches
+another context. It also provides as usual <code class="docutils literal notranslate"><span class="pre">as_scheme</span></code>, <code class="docutils literal notranslate"><span class="pre">from_scheme</span></code>, <code class="docutils literal notranslate"><span class="pre">from_spans</span></code>, <code class="docutils literal notranslate"><span class="pre">from_exporter</span></code>
+and <code class="docutils literal notranslate"><span class="pre">verify_scheme</span></code> methods.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="how-to/index.html">How-to guides</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> (Current)</p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> </p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

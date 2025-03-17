@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to configure the telemetry from the environment &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to write logs" href="telem-logs.html" />
+    <link rel="prev" title="How to configure the http exporters" href="config-http.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="how-to-configure-the-telemetry-from-the-environment">
+<span id="config-env"></span><h1>How to configure the telemetry from the environment<a class="headerlink" href="#how-to-configure-the-telemetry-from-the-environment" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the recommended way to use this framework for code that runs in production,
+as it allows to modify a lot of parameters using environment variables.</p>
+</div>
+<p>To configure the framework from the environment, you can use the <code class="docutils literal notranslate"><span class="pre">configure_from_env</span></code> method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure_from_env</span>
+
+<span class="n">configure_from_env</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>By default, if no environment variable is set, this will result in a crash as the environment does not
+provide enough information for the configuration to be generated. The first environment variable you
+need to provide is <code class="docutils literal notranslate"><span class="pre">TELEMETRY_CONFIG_TYPE</span></code>, which tells the telemetry which configuration type to use.</p>
+<p>For example, if you want to use the <code class="docutils literal notranslate"><span class="pre">TestConfig</span></code> object, you must set the value to <code class="docutils literal notranslate"><span class="pre">TEST</span></code>. If you want
+to use the <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code> object, you must set the value to <code class="docutils literal notranslate"><span class="pre">HTTP</span></code>. Any other value will result in a crash.
+The HTTP configuration requires more environment variables to be properly initialized, and so you need to
+set them as described in <a class="reference internal" href="#config-env-http-specific"><span class="std std-ref">Http-Specific Configuration</span></a>.</p>
+<section id="setting-the-parameters-of-the-resource">
+<span id="config-env-resource"></span><h2>Setting the parameters of the resource<a class="headerlink" href="#setting-the-parameters-of-the-resource" title="Link to this heading">¶</a></h2>
+<p>To provide the necessary information about the current container or the current service being run,
+one has to provide the necessary arguments in an opentelemetry <code class="docutils literal notranslate"><span class="pre">Resource</span></code> object. To do that from
+the environment, the telemetry framework provides one environment variable per argument you could pass
+to the resource.</p>
+<p>Given the name of the argument, as described by the
+<a class="reference external" href="https://github.com/open-telemetry/opentelemetry-python/blob/main/opentelemetry-semantic-conventions/src/opentelemetry/semconv/resource/__init__.py">OpenTelemetry Semantic Convention</a>
+in the <code class="docutils literal notranslate"><span class="pre">ResourceAttributes</span></code> object, the environment variable will be <code class="docutils literal notranslate"><span class="pre">TELEMETRY_RESOURCE_</span></code> followed
+by the name. For example, if you want to set <code class="docutils literal notranslate"><span class="pre">SERVICE_NAME</span></code>, you need to set the environment variable
+<code class="docutils literal notranslate"><span class="pre">TELEMETRY_RESOURCE_SERVICE_NAME</span></code>.</p>
+</section>
+<section id="http-specific-configuration">
+<span id="config-env-http-specific"></span><h2>Http-Specific Configuration<a class="headerlink" href="#http-specific-configuration" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code> generated when <code class="docutils literal notranslate"><span class="pre">TELEMETRY_CONFIG_TYPE</span></code> is set to <code class="docutils literal notranslate"><span class="pre">HTTP</span></code> provides a few
+environment variables to modify the behaviour of the endpoints in a similar way as what is done
+in <a class="reference internal" href="config-http.html#config-http-advanced-endpoints"><span class="std std-ref">HttpConfig’s Advanced Endpoint Guide</span></a>.</p>
+<p>In particular, you can set the base HTTP endpoint using the <code class="docutils literal notranslate"><span class="pre">TELEMETRY_HTTP_ENDPOINT</span></code> environment
+variable. If this variable is missing, your code wont start. If you need to enforce the slash at the end of
+the base endpoint as per <a class="reference internal" href="config-http.html#config-http-force-ending-slash"><span class="std std-ref">How to have an ending slash in the endpoint</span></a>,
+you can use the <code class="docutils literal notranslate"><span class="pre">TELEMETRY_HTTP_FORCE_SLASH</span></code> environment variable and set it to <code class="docutils literal notranslate"><span class="pre">TRUE</span></code> or <code class="docutils literal notranslate"><span class="pre">FALSE</span></code>.
+Any other value will result in a <code class="docutils literal notranslate"><span class="pre">TelemetryConfigException</span></code>.</p>
+<p>To modify the suffixes of the HTTP endpoints, you can use one of the <code class="docutils literal notranslate"><span class="pre">TELEMETRY_METRICS_SUFFIX</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TELEMETRY_TRACES_SUFFIX</span></code> and <code class="docutils literal notranslate"><span class="pre">TELEMETRY_LOGS_SUFFIX</span></code> environment variables, that allow you
+to change the default suffix. If they are absent, the default value will be the one used by the
+<code class="docutils literal notranslate"><span class="pre">grafana/otel-lgtm</span></code> docker image, as described in <a class="reference internal" href="config-http.html#config-http"><span class="std std-ref">How to configure the http exporters</span></a>.</p>
+</section>
+<section id="example-of-http-configuration">
+<h2>Example of HTTP Configuration<a class="headerlink" href="#example-of-http-configuration" title="Link to this heading">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">TELEMETRY_CONFIG_TYPE</span><span class="o">=</span><span class="s2">&quot;HTTP&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TELEMETRY_HTTP_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://localhost:4318&quot;</span>
+
+<span class="nb">export</span><span class="w"> </span><span class="nv">TELEMETRY_RESOURCE_SERVICE_NAME</span><span class="o">=</span><span class="s2">&quot;service&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TELEMETRY_RESOURCE_HOST_NAME</span><span class="o">=</span><span class="s2">&quot;host_name&quot;</span>
+
+<span class="c1"># Call your python code</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-to guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#configure">Configure</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="config-test.html">How to configure the testing framework</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config-http.html">How to configure the http exporters</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to configure the telemetry from the environment</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#setting-the-parameters-of-the-resource">Setting the parameters of the resource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#http-specific-configuration">Http-Specific Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#example-of-http-configuration">Example of HTTP Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#writting-telemetry">Writting telemetry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> (Current)</p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> </p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/how-to/config-env.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

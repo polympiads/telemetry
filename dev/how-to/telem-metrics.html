@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to write metrics &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to write traces" href="telem-traces.html" />
+    <link rel="prev" title="How to write logs" href="telem-logs.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="how-to-write-metrics">
+<span id="telem-metrics"></span><h1>How to write metrics<a class="headerlink" href="#how-to-write-metrics" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The metric system uses the <code class="docutils literal notranslate"><span class="pre">OpenTelemetry</span></code> metric instruments. You can read more about the
+full list of instruments that you may use in <a class="reference external" href="https://opentelemetry.io/docs/concepts/signals/metrics/#metric-instruments">OpenTelemetry Metrics</a>.</p>
+</div>
+<p>The first step to create good metrics is to first create the metric instruments.
+A metric instrument is an object that allows you to set the value of a metric.
+For example, a Gauge metric instrument is the simplest object, for which you can simply set the value.
+On the other hand, a Counter is an object on which you can increment the value.</p>
+<p>If you want to create a Gauge, you first need to get the meter (that is, the factory of
+metric instruments for the current file, similarly to the name of <code class="docutils literal notranslate"><span class="pre">getLogger</span></code> in the Python <code class="docutils literal notranslate"><span class="pre">logging</span></code> library),
+and then you can instantiate the gauge from the meter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">metrics</span>
+
+<span class="c1"># Configure the framework...</span>
+
+<span class="c1"># Get metrics and create the gauge</span>
+<span class="n">meter</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">get_meter</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">gauge</span> <span class="o">=</span> <span class="n">meter</span><span class="o">.</span><span class="n">create_gauge</span><span class="p">(</span>
+    <span class="s2">&quot;example_gauge&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;...&quot;</span>
+<span class="p">)</span>
+
+<span class="n">gauge</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Do something...</span>
+<span class="n">gauge</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can choose the unit as you wish, but you can find a non-exhaustive list of
+the usual units used in metrics in the <a class="reference external" href="https://prometheus.io/docs/practices/naming/#base-units">Prometheus Documentation</a>.</p>
+<p>There are certain conventions on how to properly name your metrics. These are
+described in the <a class="reference external" href="https://prometheus.io/docs/practices/naming/#metric-names">Prometheus Documentaton</a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You need to avoid creating metric instruments multiple times.
+Usually one instantiates the instrument only once per metric.</p>
+</div>
+<section id="understanding-labels">
+<h2>Understanding labels<a class="headerlink" href="#understanding-labels" title="Link to this heading">¶</a></h2>
+<p>Labels are core to metrics as you don’t want to create too many metrics,
+as each one of these needs one global variable. Labels are used to
+infer some properties on the metrics, such as error status, or special
+parameters. For example, we can extend the previous code so the gauge
+has a status.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gauge</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;BEFORE&quot;</span> <span class="p">})</span>
+<span class="c1"># Do something...</span>
+<span class="n">gauge</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">{</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;AFTER&quot;</span> <span class="p">})</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>To avoid flooding the databases with unnecessary data, the labels have to be general data not user-specific data.
+For example, you don’t want to have a “username” label on your login page, but you could have a
+“auth-method” label to differentiate between two authentication methods (for example email vs oauth).</p>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-to guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#configure">Configure</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#writting-telemetry">Writting telemetry</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="telem-logs.html">How to write logs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to write metrics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#understanding-labels">Understanding labels</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="telem-traces.html">How to write traces</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> (Current)</p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> </p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/how-to/telem-metrics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

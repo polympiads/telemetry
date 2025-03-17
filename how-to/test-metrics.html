@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to write unittests for metrics &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to write unittests for traces" href="test-traces.html" />
+    <link rel="prev" title="How to write unittests for logs" href="test-logs.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="how-to-write-unittests-for-metrics">
+<span id="test-metrics"></span><h1>How to write unittests for metrics<a class="headerlink" href="#how-to-write-unittests-for-metrics" title="Link to this heading">¶</a></h1>
+<p>Writting unittests in telemetry is hard and can take a long time as it is usually something
+that you look at, not something that is easily unit tested. To counter that, the telemetry framework
+provides a scheme framework. A scheme is the representation of the expected way the metrics should look.</p>
+<p>For example, you could write the following scheme to check for a gauge called <code class="docutils literal notranslate"><span class="pre">some_gauge</span></code> that is <code class="docutils literal notranslate"><span class="pre">1</span></code>
+without arguments, and <code class="docutils literal notranslate"><span class="pre">1.5</span></code> with arguments <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">&quot;f1&quot;:</span> <span class="pre">&quot;hello&quot;</span> <span class="pre">}</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">some_gauge</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">some_gauge</span><span class="p">[</span><span class="n">f1</span><span class="p">:</span><span class="n">hello</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.5</span>
+</pre></div>
+</div>
+<p>Once you have described your scheme as a string, you can call <code class="docutils literal notranslate"><span class="pre">CollectedMetrics.verify_scheme</span></code> with the scheme.
+For example, you could do the following :</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">CollectedMetrics</span><span class="o">.</span><span class="n">verify_scheme</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    some_gauge = 1</span>
+<span class="s2">    some_gauge[f1:hello] = 1.5</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to simplify debugging in case of a test failure, you can provide a test verbosity to the method,
+either <code class="docutils literal notranslate"><span class="pre">MetricsTestVerbosity.SIMPLE_ERROR</span></code> or <code class="docutils literal notranslate"><span class="pre">MetricsTestVerbosity.FULL_LOG</span></code>. The <code class="docutils literal notranslate"><span class="pre">SIMPLE_ERROR</span></code> will
+only show a simple error message such as <code class="docutils literal notranslate"><span class="pre">Wrong</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">metric</span> <span class="pre">'gauge',</span> <span class="pre">with</span> <span class="pre">expected</span> <span class="pre">value</span> <span class="pre">1,</span> <span class="pre">found</span> <span class="pre">2</span> <span class="pre">(distance</span> <span class="pre">1</span> <span class="pre">&gt;</span> <span class="pre">0)</span></code>.
+In case you provide the <code class="docutils literal notranslate"><span class="pre">FULL_LOG</span></code>, the framework will print both the expected and found metrics in the scheme
+format, as well as the error message.</p>
+<p>You may also provide a <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> parameters, that allows you to set the tolerance on floating point numbers.</p>
+<section id="advanced-testing">
+<h2>Advanced Testing<a class="headerlink" href="#advanced-testing" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is not the recommended way to do unit testing on metrics as it can lead to really long code
+to check that the metrics are the same as what you expects.</p>
+</div>
+<p>If you need some advanced unit testing, you can call the <code class="docutils literal notranslate"><span class="pre">telemetry.metrics.get_test_reader()</span></code> method
+that returns an <code class="docutils literal notranslate"><span class="pre">InMemoryMetricsReader</span></code>. It provides a <code class="docutils literal notranslate"><span class="pre">get_metrics_data()</span></code> method that returns and clears
+the latest metrics data.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-to guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#configure">Configure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#writting-telemetry">Writting telemetry</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#testing">Testing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="test-logs.html">How to write unittests for logs</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to write unittests for metrics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-testing">Advanced Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="test-traces.html">How to write unittests for traces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> </p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> (Current)</p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/how-to/test-metrics.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

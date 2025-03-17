@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to write unittests for logs &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to write unittests for metrics" href="test-metrics.html" />
+    <link rel="prev" title="How to write traces" href="telem-traces.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="how-to-write-unittests-for-logs">
+<span id="test-logs"></span><h1>How to write unittests for logs<a class="headerlink" href="#how-to-write-unittests-for-logs" title="Link to this heading">¶</a></h1>
+<p>Writting unittests in telemetry is hard and can take a long time as it is usually something
+that you look at, not something that is easily unit tested. To counter that, the telemetry framework
+provides a scheme framework. A scheme is the representation of the expected way the logs should look.</p>
+<p>For example, you could write the following scheme to check for two logs, one <code class="docutils literal notranslate"><span class="pre">CRITICAL</span></code> with message <code class="docutils literal notranslate"><span class="pre">&quot;Some</span>
+<span class="pre">critical</span> <span class="pre">message&quot;</span></code> and parameters <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">&quot;param&quot;:</span> <span class="pre">&quot;1&quot;,</span> <span class="pre">&quot;request&quot;:</span> <span class="pre">&quot;GET</span> <span class="pre">/path&quot;</span> <span class="pre">}</span></code>, and the other one <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> with
+message <code class="docutils literal notranslate"><span class="pre">&quot;Some</span> <span class="pre">error</span> <span class="pre">message&quot;</span></code> and no parameters.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CRITICAL</span> <span class="s2">&quot;Some critical message&quot;</span> <span class="p">[</span><span class="n">param</span><span class="p">:</span><span class="mi">1</span><span class="p">][</span><span class="n">request</span><span class="p">:</span><span class="n">GET</span> <span class="o">/</span><span class="n">path</span><span class="p">]</span>
+<span class="n">ERROR</span>     <span class="n">Some</span> <span class="n">error</span> <span class="n">message</span>
+</pre></div>
+</div>
+<p>Once you have your scheme, you can call <code class="docutils literal notranslate"><span class="pre">VirtualLogRecords.verify_from_scheme</span></code> with the scheme of your string
+to verify that the latest logs are the same as the logs you expect (if there are additional parameters in your
+logs, they wont fail the result). For example, you could do the following</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">VirtualLogRecords</span><span class="o">.</span><span class="n">verify_from_scheme</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    CRITICAL &quot;Some critical message&quot; [param:1][request:GET /path]</span>
+<span class="s2">    ERROR     Some error message</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to simplify debugging in case of a test failure, you can provider a test verbosity to the method,
+either <code class="docutils literal notranslate"><span class="pre">LogTestVerbosity.ONLY_ERROR</span></code> or <code class="docutils literal notranslate"><span class="pre">LogTestVerbosity.FULL</span></code>. The <code class="docutils literal notranslate"><span class="pre">ONLY_ERROR</span></code> mode will print the
+first logs that differ and why they differ, and the <code class="docutils literal notranslate"><span class="pre">FULL</span></code> verbosity will print the logs found in scheme format,
+the expected logs in scheme format and the error message.</p>
+<section id="advanced-testing">
+<h2>Advanced Testing<a class="headerlink" href="#advanced-testing" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is not the recommended way to do unit testing on logs as it can lead to really long code
+to check that the logs are the same as what you expects.</p>
+</div>
+<p>The test logging is handled by a custom logging handler of type <code class="docutils literal notranslate"><span class="pre">TestLoggingHandler</span></code>.
+You can get the test handler that is used in the configuration using <code class="docutils literal notranslate"><span class="pre">telemetry.logging.get_test_handler()</span></code>
+It provides twos methods, <code class="docutils literal notranslate"><span class="pre">get_sent_records</span></code> and <code class="docutils literal notranslate"><span class="pre">clear</span></code> to allow you to retrieve the records and clear
+them once you don’t need them anymore.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-to guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#configure">Configure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#writting-telemetry">Writting telemetry</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#testing">Testing</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to write unittests for logs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-testing">Advanced Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="test-metrics.html">How to write unittests for metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test-traces.html">How to write unittests for traces</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> (Current)</p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> </p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/how-to/test-logs.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

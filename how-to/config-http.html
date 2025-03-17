@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to configure the http exporters &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to configure the telemetry from the environment" href="config-env.html" />
+    <link rel="prev" title="How to configure the testing framework" href="config-test.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="how-to-configure-the-http-exporters">
+<span id="config-http"></span><h1>How to configure the http exporters<a class="headerlink" href="#how-to-configure-the-http-exporters" title="Link to this heading">¶</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is not the recommended way to use the framework in production,
+it is only usefull when testing on localhost to verify that your code works properly.</p>
+<p>The recommended way to use the framework can be found in <a class="reference internal" href="config-env.html#config-env"><span class="std std-ref">How to configure the framework using the environment</span></a></p>
+</div>
+<p>To configure the http exporters, you can simply call the <code class="docutils literal notranslate"><span class="pre">configure</span></code> method using a <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code> object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">TestConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">HttpConfig</span><span class="p">(</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">)</span>
+<span class="n">configure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we have assumed that you are using the <code class="docutils literal notranslate"><span class="pre">grafana/otel-lgtm</span></code> docker image, so it will automatically choose the endpoints as <code class="docutils literal notranslate"><span class="pre">http://localhost:4318/v1/traces</span></code>, <code class="docutils literal notranslate"><span class="pre">http://localhost:4318/v1/metrics</span></code> and <code class="docutils literal notranslate"><span class="pre">http://localhost:4318/v1/logs</span></code>.</p>
+<div class="admonition note" id="config-http-force-ending-slash">
+<p class="admonition-title">Note</p>
+<p>By default, if a <code class="docutils literal notranslate"><span class="pre">'/'</span></code> is found at the end of the base endpoint, it will be removed as the endpoints is computed
+as a direct concatenation of the base endpoint and the suffix, so you would get two <code class="docutils literal notranslate"><span class="pre">'/'</span></code> adjacent in your
+target path. As this might be an issue, the program issues a warning and removes the occurrence in the base.
+If you want to force this behaviour, there is the optional parameter <code class="docutils literal notranslate"><span class="pre">force_ending_slash</span></code> to remove this behaviour.</p>
+</div>
+<section id="configuration-parameters">
+<h2>Configuration parameters<a class="headerlink" href="#configuration-parameters" title="Link to this heading">¶</a></h2>
+<p>It may be usefull for you to change the formatter for logging, if you need to quickly see some parameters in the logs.
+To do that, you can set the <code class="docutils literal notranslate"><span class="pre">formatter</span></code> field of the config to any thing you want.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">HttpConfig</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">HttpConfig</span><span class="p">(</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(name)s</span><span class="s2">: </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">configure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may need to modify the opentelemetry <code class="docutils literal notranslate"><span class="pre">Resource</span></code> object to signal what service or cluster your code is running in,
+to do that, you may set the <code class="docutils literal notranslate"><span class="pre">resource</span></code> field to a new object of your choice.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">HttpConfig</span><span class="p">,</span> <span class="n">Resource</span><span class="p">,</span> <span class="n">SERVICE_NAME</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">HttpConfig</span><span class="p">(</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">resource</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">({</span> <span class="n">SERVICE_NAME</span><span class="p">:</span> <span class="s2">&quot;service&quot;</span> <span class="p">})</span>
+<span class="n">configure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To set the log level of your telemetry, you can set the <code class="docutils literal notranslate"><span class="pre">loglevel</span></code> property of your config.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">HttpConfig</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">HttpConfig</span><span class="p">(</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">)</span>
+<span class="c1"># Only send ERROR and CRITICAL logs</span>
+<span class="n">config</span><span class="o">.</span><span class="n">loglevel</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span>
+<span class="n">configure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-endpoints">
+<span id="config-http-advanced-endpoints"></span><h2>Advanced endpoints<a class="headerlink" href="#advanced-endpoints" title="Link to this heading">¶</a></h2>
+<p>By default, the config assumes you are using the docker image of <code class="docutils literal notranslate"><span class="pre">grafana/otel-lgtm</span></code>, but it might not be the case. To modify this behaviour, you can therefore change the variables <code class="docutils literal notranslate"><span class="pre">suffix_metrics</span></code>, <code class="docutils literal notranslate"><span class="pre">suffix_traces</span></code> and <code class="docutils literal notranslate"><span class="pre">suffix_logs</span></code> to something else that suits your configuration better.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">TestConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">HttpConfig</span><span class="p">(</span><span class="s2">&quot;http://localhost:4318&quot;</span><span class="p">)</span>
+<span class="n">config</span><span class="o">.</span><span class="n">suffix_metrics</span> <span class="o">=</span> <span class="s2">&quot;/v2/metrics&quot;</span>
+<span class="c1"># the endpoint will now be http://localhost:4318/v2/metrics</span>
+<span class="n">configure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you need to have something more advanced than just adding a suffix to the base endpoint,
+you have to posibilities. First, you can set the <code class="docutils literal notranslate"><span class="pre">metrics_endpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">traces_endpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">logs_endpoint</span></code>
+on the <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code>, which will automatically change the behaviour of the properties.</p>
+<p>Alternatively, you might want to create a new config that inherints from <code class="docutils literal notranslate"><span class="pre">HttpConfig</span></code> and in particular
+that overrides the properties <code class="docutils literal notranslate"><span class="pre">metrics_endpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">traces_endpoint</span></code> and <code class="docutils literal notranslate"><span class="pre">logs_endpoint</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">telemetry</span> <span class="kn">import</span> <span class="n">configure</span><span class="p">,</span> <span class="n">HttpConfig</span>
+
+<span class="c1"># An example of a custom Http Config</span>
+<span class="c1">#  - Metrics are on port 4319</span>
+<span class="c1">#  - Logs and traces are as usual on port 4318</span>
+<span class="k">class</span> <span class="nc">MyHttpConfig</span> <span class="p">(</span><span class="n">HttpConfig</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;http://localhost:4318/&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">metrics_endpoint</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Do something if you want to generate the endpoint</span>
+        <span class="k">return</span> <span class="s2">&quot;http://localhost:4319/&quot;</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">MyHttpConfig</span><span class="p">()</span>
+<span class="n">configure</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-to guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#configure">Configure</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="config-test.html">How to configure the testing framework</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to configure the http exporters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configuration-parameters">Configuration parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-endpoints">Advanced endpoints</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="config-env.html">How to configure the telemetry from the environment</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#writting-telemetry">Writting telemetry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#testing">Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> </p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> (Current)</p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/how-to/config-http.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

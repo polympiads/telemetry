@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to write unittests for traces &#8212; telemetry 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=4f649999" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=cb25574f" />
+    <script src="../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="prev" title="How to write unittests for metrics" href="test-metrics.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="how-to-write-unittests-for-traces">
+<span id="test-traces"></span><h1>How to write unittests for traces<a class="headerlink" href="#how-to-write-unittests-for-traces" title="Link to this heading">¶</a></h1>
+<p>Writting unittests in telemetry is hard and can take a long time as it is usually something
+that you look at, not something that is easily unit tested. To counter that, the telemetry framework
+provides a scheme framework. A scheme is the representation of the expected way the trace should look.</p>
+<p>For example, you could write the following scheme to represent a complex computation involving multiple
+events and subspans :</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">+</span>    <span class="n">Span</span>  <span class="s2">&quot;some_span&quot;</span> <span class="p">[</span><span class="n">some_attr</span><span class="p">:</span><span class="mi">1</span><span class="p">][</span><span class="n">other_attr</span><span class="p">:</span><span class="n">abcd</span><span class="p">]</span>
+<span class="o">|</span>    <span class="n">Event</span> <span class="s2">&quot;e1&quot;</span>
+<span class="o">|</span> <span class="o">+</span>  <span class="n">Span</span>  <span class="s2">&quot;other_span&quot;</span> <span class="p">[</span><span class="n">one_attr</span><span class="p">:</span><span class="mi">42</span><span class="p">]</span>
+<span class="o">|</span> <span class="o">|</span>  <span class="n">Event</span> <span class="s2">&quot;e2&quot;</span>
+<span class="o">|</span> <span class="o">+</span>
+<span class="o">|</span>    <span class="n">Event</span> <span class="s2">&quot;e3&quot;</span> <span class="p">[</span><span class="n">eattr</span><span class="p">:</span><span class="n">R</span><span class="p">]</span>
+<span class="o">+</span>
+</pre></div>
+</div>
+<p>Here, the scheme described a root span named <code class="docutils literal notranslate"><span class="pre">&quot;some_span&quot;</span></code>, with attributes <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">&quot;some_attr&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;other_attr&quot;:</span> <span class="pre">&quot;abcd&quot;</span> <span class="pre">}</span></code>.
+Containing first in order an event named <code class="docutils literal notranslate"><span class="pre">&quot;e1&quot;</span></code> with no attributes, a subspan named <code class="docutils literal notranslate"><span class="pre">&quot;other_span&quot;</span></code>
+with attributes <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">&quot;one_attr&quot;:</span> <span class="pre">42</span> <span class="pre">}</span></code> and an event named <code class="docutils literal notranslate"><span class="pre">&quot;e2&quot;</span></code> inside of it, and finally in the root
+span an event named <code class="docutils literal notranslate"><span class="pre">&quot;e3&quot;</span></code> with attributes <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">&quot;eattr&quot;:</span> <span class="pre">&quot;R&quot;</span> <span class="pre">}</span></code>.</p>
+<p>You can verify that the scheme is equivalent to the latest spans by calling <code class="docutils literal notranslate"><span class="pre">VirtualContext.verify_scheme</span></code>
+with your scheme string. You can also provider a verbosity (either <code class="docutils literal notranslate"><span class="pre">FULL</span></code> or <code class="docutils literal notranslate"><span class="pre">NONE</span></code>, where <code class="docutils literal notranslate"><span class="pre">FULL</span></code> prints
+only the expected and found schemes). You could do something like this :</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">VirtualContext</span><span class="o">.</span><span class="n">verify_scheme</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    +    Span  &quot;some_span&quot; [some_attr:1][other_attr:abcd]</span>
+<span class="s2">    |    Event &quot;e1&quot;</span>
+<span class="s2">    | +  Span  &quot;other_span&quot; [one_attr:42]</span>
+<span class="s2">    | |  Event &quot;e2&quot;</span>
+<span class="s2">    | +</span>
+<span class="s2">    |    Event &quot;e3&quot; [eattr:R]</span>
+<span class="s2">    +</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Please note that the expected and found schemes might differ if some timings overlap (for example two
+spans last less than a microsecond and they get swapped in the display).</p>
+<p>Theoretically, the verifier should still be able to verify the schemes as it checks greedily
+all valid equivalent spans and events, but you should be careful as wrong configuration can lead
+to increasingly slow checks.</p>
+<p>To avoid that, try to avoid spans that last less than a microsecond or if there are some, try
+avoiding them lasting having both the same name and the same attributes.</p>
+</div>
+<section id="advanced-testing">
+<h2>Advanced testing<a class="headerlink" href="#advanced-testing" title="Link to this heading">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is not the recommended way to do unit testing on traces as it can lead to really long code
+to check that the traces are the same as what you expects.</p>
+</div>
+<p>If you want to access directly the underlying spans, you can get the <code class="docutils literal notranslate"><span class="pre">InMemorySpanExporter</span></code> by
+calling <code class="docutils literal notranslate"><span class="pre">telemetry.traces.get_test_exporter()</span></code>. It provides the methods <code class="docutils literal notranslate"><span class="pre">get_finished_spans</span></code> and <code class="docutils literal notranslate"><span class="pre">clear</span></code>.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">telemetry</a></h1>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">How-to guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#configure">Configure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#writting-telemetry">Writting telemetry</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#testing">Testing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="test-logs.html">How to write unittests for logs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test-metrics.html">How to write unittests for metrics</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to write unittests for traces</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#advanced-testing">Advanced testing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+
+<h3>Versions</h3>
+<ul>
+    
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/dev">dev</a> </p></li>
+    <li><p style="margin: 0;"><a href="https://polympiads.github.io/telemetry/">release</a> (Current)</p></li>
+</ul>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2025, polympiads.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/how-to/test-traces.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
