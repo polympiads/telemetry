@@ -85,8 +85,12 @@ def test_configure_http_internal (
             set_test_handler: Mock
         ):
     config = HttpConfig( "http://localhost:4318" )
+    config.formatter = Mock()
+
     provider = logger_provider.return_value = Mock()
     handler  = logging_handler.return_value = Mock()
+    
+    handler.setFormatter = Mock()
 
     http = http_exporter.return_value = Mock()
     batch = batch_processor.return_value = Mock()
@@ -99,6 +103,7 @@ def test_configure_http_internal (
 
     logger_provider.assert_called_once_with( resource=config.resource )
     set_logger_provider.assert_called_once_with( provider )
+    handler.setFormatter.assert_called_once_with( config.formatter )
 
     logging_handler.assert_called_once_with( config.loglevel, provider )
     logger.setLevel.assert_called_once_with( config.loglevel )

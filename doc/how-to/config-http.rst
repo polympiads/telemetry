@@ -83,7 +83,12 @@ By default, the config assumes you are using the docker image of ``grafana/otel-
     # the endpoint will now be http://localhost:4318/v2/metrics
     configure(config)
 
-If you need to have something more advanced than just adding a suffix to the base endpoint, you might need to create a new config that inherints from ``HttpConfig`` and in particular that overrides the properties ``metrics_endpoint``, ``traces_endpoint`` and ``logs_endpoint``.
+If you need to have something more advanced than just adding a suffix to the base endpoint, 
+you have to posibilities. First, you can set the ``metrics_endpoint``, ``traces_endpoint`` and ``logs_endpoint``
+on the ``HttpConfig``, which will automatically change the behaviour of the properties.
+
+Alternatively, you might want to create a new config that inherints from ``HttpConfig`` and in particular
+that overrides the properties ``metrics_endpoint``, ``traces_endpoint`` and ``logs_endpoint``.
 
 .. code-block:: python
 
@@ -98,6 +103,7 @@ If you need to have something more advanced than just adding a suffix to the bas
         
         @property
         def metrics_endpoint (self):
+            # Do something if you want to generate the endpoint
             return "http://localhost:4319/"
 
     config = MyHttpConfig()

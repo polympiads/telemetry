@@ -45,3 +45,4 @@ In this example, you should see a span appearing in grafana that is linked direc
    :hidden:
 
    how-to/index
+   api
